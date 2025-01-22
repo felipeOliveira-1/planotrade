@@ -1,0 +1,23 @@
+{
+  "current_balance": 250.0,
+  "completed_trades": 1,
+  "max_drawdown": 0,
+  "max_balance": 250,
+  "leverage": 2,
+  "position_size_percent": 10,
+  "trade_history": [
+    {
+      "type": "long",
+      "entry": 5.0,
+      "target": 7.0,
+      "stop": 3.0,
+      "result": 0,
+      "balance_before": 250.0,
+      "balance_after": 250.0,
+      "timestamp": "2025-01-22 19:51:03",
+      "leverage": 2,
+      "position_size_percent": 10.0
+    }
+  ],
+  "account_operations": []
+}

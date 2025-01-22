@@ -1,0 +1,26 @@
+[
+    {
+        "type": "TradeType.LONG",
+        "entry": 100.0,
+        "target": 105.0,
+        "stop": 101.0,
+        "result": 0,
+        "balance_before": 10000.0,
+        "balance_after": 10000.0,
+        "timestamp": "2025-01-22 20:10:34.326980",
+        "leverage": 2,
+        "position_size_percent": 50.0
+    },
+    {
+        "type": "TradeType.LONG",
+        "entry": 100.0,
+        "target": 105.0,
+        "stop": 101.0,
+        "result": 0,
+        "balance_before": 10000.0,
+        "balance_after": 10000.0,
+        "timestamp": "2025-01-22 20:10:53.020690",
+        "leverage": 2,
+        "position_size_percent": 50.0
+    }
+]

@@ -1,0 +1,6 @@
+typer[all]
+pydantic
+python-dotenv
+pandas
+sqlalchemy
+psycopg2-binary
