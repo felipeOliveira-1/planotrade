@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional, List
 from models.account import TradePlan
-from models.trade import TradeResult, TradeType
+from models.trade import TradeResult, TradeType, TradeStatus
 from core.repository import Repository, UnitOfWork
 from utils.math_utils import calculate_position_size, calculate_pnl
 
@@ -52,6 +52,60 @@ class TradeService:
             self.trade_repository.add(trade)
             
             return trade
+            
+    def close_trade(self, trade_id: int, close_price: float, result: Optional[float] = None) -> TradeResult:
+        """Fecha uma operação aberta"""
+        from core.logging import logger
+        
+        try:
+            with self.unit_of_work:
+                logger.debug(f"Tentando fechar operação {trade_id}")
+                trade = self.trade_repository.get(trade_id)
+                
+                if not trade:
+                    logger.error(f"Operação {trade_id} não encontrada")
+                    raise ValueError(f"Operação {trade_id} não encontrada")
+                    
+                logger.debug(f"Operação encontrada: {trade}")
+                
+                if trade.status == TradeStatus.CLOSED:
+                    logger.error(f"Operação {trade_id} já está fechada")
+                    raise ValueError(f"Operação {trade_id} já está fechada")
+                    
+                # Calcula o resultado se não foi fornecido
+                if result is None:
+                    logger.debug("Calculando resultado automaticamente")
+                    result = calculate_pnl(
+                        entry=trade.entry,
+                        exit_price=close_price,
+                        position_size=(trade.position_size_percent / 100) * trade.leverage,
+                        trade_type=trade.type.value
+                    )
+                    logger.debug(f"Resultado calculado: {result}")
+                    
+                # Atualiza o trade
+                trade.status = TradeStatus.CLOSED
+                trade.close_price = close_price
+                trade.close_timestamp = datetime.now().isoformat()
+                trade.result = result
+                
+                # Atualiza o saldo
+                self.trade_plan.current_balance += result
+                trade.balance_after = self.trade_plan.current_balance
+                
+                logger.debug(f"Atualizando trade no repositório: {trade}")
+                self.trade_repository.update(trade)
+                
+                self.trade_plan.completed_trades += 1
+                self.trade_plan.trade_history.append(trade)
+                
+                logger.info(f"Operação {trade_id} fechada com sucesso")
+                return trade
+                
+        except Exception as e:
+            logger.error(f"Erro ao fechar operação {trade_id}: {str(e)}")
+            logger.exception(e)
+            raise
 
     def _validate_and_create_trade(self, trade_data: dict) -> TradeResult:
         """Valida os dados e cria um novo TradeResult"""

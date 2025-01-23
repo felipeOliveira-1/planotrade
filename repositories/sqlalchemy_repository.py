@@ -36,6 +36,7 @@ class SQLAlchemyRepository(Repository[TradeResult]):
     def _to_model(self, entity: TradeResult) -> TradeModel:
         """Converte TradeResult para TradeModel"""
         return TradeModel(
+            id=entity.id,
             type=entity.type,
             entry=entity.entry,
             target=entity.target,
@@ -51,6 +52,7 @@ class SQLAlchemyRepository(Repository[TradeResult]):
     def _from_model(self, model: TradeModel) -> TradeResult:
         """Converte TradeModel para TradeResult"""
         return TradeResult(
+            id=model.id,
             type=model.type,
             entry=model.entry,
             target=model.target,

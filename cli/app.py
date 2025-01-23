@@ -2,6 +2,7 @@ import typer
 from typing import Optional
 from core.factory import ServiceFactory
 from core.logging import logger
+from models.trade import TradeStatus, TradeResult
 
 app = typer.Typer()
 
@@ -56,8 +57,43 @@ def list():
         logger.error(f"Erro ao listar operações: {str(e)}")
         raise typer.Exit(code=1)
 
+@app.command()
+def close(
+    trade_id: int = typer.Argument(..., help="ID da operação a ser fechada"),
+    price: float = typer.Argument(..., help="Preço de fechamento"),
+    result: Optional[float] = typer.Option(None, help="Resultado da operação")
+):
+    """Fecha uma operação aberta"""
+    try:
+        trade_service = ServiceFactory.create_trade_service()
+        trade = trade_service.close_trade(trade_id, price, result)
+        
+        logger.info(f"Operação {trade_id} fechada com sucesso!")
+        logger.info(f"Resultado: {trade.result}")
+        logger.info(f"Preço de fechamento: {trade.close_price}")
+        logger.info(f"Data de fechamento: {trade.close_timestamp}")
+        
+    except Exception as e:
+        logger.error(f"Erro ao fechar operação: {str(e)}")
+        logger.exception(e)
+        raise typer.Exit(code=1)
+
 def main():
     app()
+
+@app.command()
+def gui():
+    """Inicia a interface gráfica"""
+    from views.gui import start_gui
+    from models.account import TradePlan
+    from repositories.file_repository import FileRepository
+    
+    # Carrega o plano de trade
+    # Carrega o plano de trade do arquivo
+    repository = FileRepository('trades.json')
+    trade_plan = repository.load_trade_plan()
+    
+    start_gui(trade_plan)
 
 if __name__ == "__main__":
     main()

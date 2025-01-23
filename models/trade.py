@@ -1,10 +1,16 @@
 from dataclasses import dataclass
 from enum import Enum
 from datetime import datetime
+from typing import Optional
+from pydantic import validator
 
 class TradeType(Enum):
     LONG = 'long'
     SHORT = 'short'
+
+class TradeStatus(Enum):
+    OPEN = 'open'
+    CLOSED = 'closed'
 
 @dataclass
 class TradeResult:
@@ -18,6 +24,27 @@ class TradeResult:
     timestamp: str
     leverage: int
     position_size_percent: float
+    id: Optional[int] = None
+    status: TradeStatus = TradeStatus.OPEN
+    close_price: float = 0.0
+    close_timestamp: str = None
+
+    @validator('stop')
+    def validate_stop_price(cls, v, values):
+        """Valida o preço de stop"""
+        if v <= 0:
+            raise ValueError('Preço inválido para operação')
+            
+        # Validação específica para operações short
+        if 'type' in values and values['type'] == TradeType.SHORT:
+            if 'entry' in values and v >= values['entry']:
+                raise ValueError('Para operações short, o stop deve ser menor que a entrada')
+        # Validação para operações long
+        elif 'type' in values and values['type'] == TradeType.LONG:
+            if 'entry' in values and v <= values['entry']:
+                raise ValueError('Para operações long, o stop deve ser maior que a entrada')
+                
+        return v
 
     @property
     def gain(self):

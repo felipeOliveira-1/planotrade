@@ -2,11 +2,14 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 from services.trade_service import TradeService
 from models.account import TradePlan
+from repositories.file_repository import FileRepository, FileUnitOfWork
 
 class TradeApp:
     def __init__(self, root, trade_plan):
         self.root = root
-        self.trade_service = TradeService(trade_plan)
+        repository = FileRepository('trades.json')
+        unit_of_work = FileUnitOfWork(repository)
+        self.trade_service = TradeService(trade_plan, repository, unit_of_work)
         self.setup_ui()
         
     def setup_ui(self):
@@ -234,7 +237,7 @@ class TradeApp:
                 raise ValueError("Alavancagem deve estar entre 1x e 10x")
             self.trade_service.trade_plan.leverage = leverage
             
-            save_trades(self.trade_plan)
+            self.trade_service.trade_repository.save_trade_plan(self.trade_service.trade_plan)
             messagebox.showinfo("Sucesso", "Configurações salvas com sucesso!")
             
         except ValueError as e:
